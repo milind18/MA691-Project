@@ -6,4 +6,5 @@ class User(models.Model):
     sex = models.CharField(max_length=10)
     bmi = models.FloatField()
     children = models.IntegerField()
+    smoker = models.BooleanField(default=True)
     region = models.CharField(max_length=50)

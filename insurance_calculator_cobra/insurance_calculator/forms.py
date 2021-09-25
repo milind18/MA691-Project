@@ -6,5 +6,5 @@ class UserForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ("age", "sex", "bmi", "children", "region")
+        fields = ("age", "sex", "bmi", "children", "smoker", "region")
         
