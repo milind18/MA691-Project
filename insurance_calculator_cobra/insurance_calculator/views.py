@@ -1,0 +1,98 @@
+from django.shortcuts import render
+from .forms import UserForm
+from django.conf import settings
+import os
+
+##COBRA Model Libraries
+import pandas as pd
+import numpy as np
+from pycobra.cobra import Cobra
+from pycobra.ewa import Ewa
+
+
+##Splitting Data
+
+
+##Upload model
+def upload_model():
+    file_ = open(os.path.join(settings.BASE_DIR, 'insurance.csv'))
+    df_claim = pd.read_csv(file_)
+    df_claim.sex = pd.Categorical(df_claim.sex).codes
+    df_claim.smoker = pd.Categorical(df_claim.smoker).codes
+    df_claim.region = pd.Categorical(df_claim.region).codes
+
+
+    X = df_claim.drop(columns=["expenses"])
+    Y = df_claim["expenses"]
+
+    # Train Data
+    X_train = np.array(X[:-30])
+    Y_train = np.array(Y[:-30])
+
+    # Epsilon Data
+    X_eps = np.array(X[-30:])
+    Y_eps = np.array(Y[-30:])
+
+    ##Training COBRA
+    COBRA = Cobra(random_state=0, epsilon=4555, machine_list='basic')
+    #COBRA.set_epsilon(X_epsilon=X_eps, y_epsilon=Y_eps, grid_points=50)
+    COBRA.fit(X_train, Y_train,default=True)
+
+    return COBRA
+
+
+def predict_insurance_premium(COBRA, age, sex1, bmi, children, smoker1, region):
+    region_map = {'southwest': 0, 'southeast': 1, 'northwest': 2, 'northeast': 3}
+    region = region_map[region]
+    if (sex1=="M"):
+        sex = 0
+    else:
+        sex = 1
+
+    if (smoker1==True):
+        smoker = 1
+    else:
+        smoker = 0
+
+
+    feature_vector = [[age, sex, bmi, children, smoker, region]]
+    insurance_premium = COBRA.predict(feature_vector)
+    return insurance_premium
+
+
+
+
+
+
+
+# Create your views here.
+def home(request):
+
+    #uploading COBRA model
+    COBRA = upload_model()
+
+    form = UserForm()
+    context = {'form':form, 'data':False, 'insurance_price':10000}
+    
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            context['form'] = form
+            context['data'] = True
+            #context['insurance_price'] = form['age']
+
+            ##Extracting features
+            age = form['age'].value()
+            sex = form['sex'].value()
+            bmi = form['bmi'].value()
+            children = form['children'].value()
+            smoker = form['smoker'].value()
+            region = form['region'].value()
+            print(age, sex, bmi, children, region)
+
+            context['insurance_price'] = predict_insurance_premium(COBRA, age, sex, bmi, children, smoker, region)
+            
+            print(form)
+        
+    return render(request, 'home.html', context)
