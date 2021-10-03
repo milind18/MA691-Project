@@ -6,17 +6,14 @@ import os
 ##COBRA Model Libraries
 import pandas as pd
 import numpy as np
-from pycobra.cobra import Cobra
-from pycobra.ewa import Ewa
 
-
-##Splitting Data
-
+from .cobra import Cobra 
 
 ##Upload model
 def upload_model():
     file_ = open(os.path.join(settings.BASE_DIR, 'insurance.csv'))
     df_claim = pd.read_csv(file_)
+
     df_claim.sex = pd.Categorical(df_claim.sex).codes
     df_claim.smoker = pd.Categorical(df_claim.smoker).codes
     df_claim.region = pd.Categorical(df_claim.region).codes
@@ -26,20 +23,14 @@ def upload_model():
     Y = df_claim["expenses"]
 
     # Train Data
-    X_train = np.array(X[:-30])
-    Y_train = np.array(Y[:-30])
-
-    # Epsilon Data
-    X_eps = np.array(X[-30:])
-    Y_eps = np.array(Y[-30:])
+    X_train = np.array(X)
+    y_train = np.array(Y)
 
     ##Training COBRA
-    COBRA = Cobra(random_state=0, epsilon=4555, machine_list='basic')
-    #COBRA.set_epsilon(X_epsilon=X_eps, y_epsilon=Y_eps, grid_points=50)
-    COBRA.fit(X_train, Y_train,default=True)
+    COBRA = Cobra(eps = 5122)
+    COBRA.fit(X_train, y_train, 0.5)
 
     return COBRA
-
 
 def predict_insurance_premium(COBRA, age, sex1, bmi, children, smoker1, region):
     region_map = {'southwest': 0, 'southeast': 1, 'northwest': 2, 'northeast': 3}
@@ -55,15 +46,9 @@ def predict_insurance_premium(COBRA, age, sex1, bmi, children, smoker1, region):
         smoker = 0
 
 
-    feature_vector = [[age, sex, bmi, children, smoker, region]]
+    feature_vector = np.array([[age, sex, bmi, children, smoker, region]])
     insurance_premium = COBRA.predict(feature_vector)
     return insurance_premium
-
-
-
-
-
-
 
 # Create your views here.
 def home(request):
