@@ -1,0 +1,1 @@
+web: gunicorn insurance_calculator_cobra.wsgi --log-file -
