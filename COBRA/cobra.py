@@ -9,7 +9,6 @@ from sklearn.model_selection import GridSearchCV
 from math import fabs
 import numpy as np
 import pandas as pd
-from pycobra.cobra import Cobra as Cobra1
 
 class Cobra(BaseEstimator):
 
