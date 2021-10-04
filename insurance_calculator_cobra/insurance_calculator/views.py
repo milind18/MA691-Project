@@ -35,7 +35,7 @@ def upload_model():
 def predict_insurance_premium(COBRA, age, sex1, bmi, children, smoker1, region):
     region_map = {'southwest': 0, 'southeast': 1, 'northwest': 2, 'northeast': 3}
     region = region_map[region]
-    if (sex1=="M"):
+    if (sex1 == "M"):
         sex = 0
     else:
         sex = 1
@@ -47,6 +47,7 @@ def predict_insurance_premium(COBRA, age, sex1, bmi, children, smoker1, region):
 
 
     feature_vector = np.array([[age, sex, bmi, children, smoker, region]])
+    print("feature>>>>>>>>>>>>>>>>>>>>>>>>>", feature_vector)
     insurance_premium = COBRA.predict(feature_vector)
     return insurance_premium
 
