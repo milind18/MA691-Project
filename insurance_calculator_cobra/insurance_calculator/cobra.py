@@ -126,7 +126,14 @@ class Cobra(BaseEstimator):
 
   
     def calculate_R_square(self, y_pred, y_test):
-        return sum((y_pred- y_test)**2/len(y_pred))
+        model_variance = sum((y_test - y_pred)**2)
+        avg = sum(y_test)/len(y_test)
+        temp = np.array([avg for i in y_test])
+        avg_variance = sum((y_test- temp)**2)
+        if(avg_variance != 0):
+            return (1 - (model_variance/avg_variance))
+        else:
+            return -1
 
     def calculate_RMSE(self, y_pred, y_test):
         return np.sqrt(sum((y_pred- y_test)**2)/len(y_pred))
